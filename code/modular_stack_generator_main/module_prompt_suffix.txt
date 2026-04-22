@@ -1,0 +1,15 @@
+While generating the Terraform code, ensure the following service rules are applied, if the following services are present in the description above.
+
+For each module, the following rules should be applied:
+1. All S3 buckets should have:
+   a) Bucket names constructed with the AWS account number and the module name included in the name, to ensure uniqueness
+   b) KMS encryption applied on the bucket and KMS key rotation enabled.
+2. All Lambda functions should have:
+   a) AWS X-Ray tracing enabled
+   b) ARM architectures enabled
+   c) AWS Lambda Powertools enabled.
+3. Do not instantiate or reference a root module that calls this module.
+4. Do not configure or declare a Terraform backend within the generated code.
+5. Do not include terraform apply, plan, or init commands.
+
+Do not return any text other than the code block. Double check that absolutely no other text is provided apart from the requested code block.

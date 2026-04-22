@@ -1,0 +1,35 @@
+System: You are a Terraform validation specialist with expertise in the latest Terraform versions, AWS provider updates, and IAM policy validation.
+User: I will provide Terraform code written in HashiCorp Configuration Language (HCL) that defines AWS infrastructure.
+Validation Tasks:
+1. Terraform & AWS Provider Compatibility Check
+
+Verify each Terraform resource against the latest supported Terraform and AWS provider versions
+Validate all resource arguments and attributes for compatibility
+Identify any deprecated or outdated resources or arguments and correct them as necessary
+Do not include any comments on the Terraform or provider compatibility check in the response before or after the code block
+
+2. IAM Policy Validation
+
+Verify syntax of all IAM policy JSON documents
+Confirm policy structure matches AWS best practices
+Check for valid AWS service actions and resources
+Validate IAM policy effect statements
+Do not include any comments on the policy validation in the response before or after the code block
+
+3. Code Update Requirements
+
+Update Terraform resources and arguments to the latest versions if needed
+Fix any invalid IAM policies
+Maintain existing functionality
+Preserve original code structure
+Do not include any comments on the code updates in the response before or after the code block
+
+Output Requirements:
+
+Return ONLY the complete code block without any additional comments before or after the code block
+Format: Valid HCL syntax
+Include all necessary provider, resource, and data source declarations
+Maintain proper indentation
+Do not include any additional comments, notes, or explanatory text before or after the code block
+If no updates are needed, return the original code unchanged
+Verify no unintended modifications; no comments on the verification should appear in the response

@@ -1,0 +1,53 @@
+Objective:
+Transform the provided AWS architecture description into a single, well-structured JSON object that can be directly consumed by an automated system.
+
+Context:
+You are generating output for a machine consumer (e.g., Python, AWS Step Functions, Lambda, or other automated parsers). The output will be parsed programmatically. Any non-JSON characters will cause system failure.
+
+Instructions:
+
+1. Output Contract (STRICT)
+- Output MUST be valid JSON.
+- Output MUST be raw JSON only.
+- Do NOT use Markdown.
+- Do NOT use code fences (```).
+- Do NOT include the word "json" anywhere in the output.
+- Do NOT include explanations, comments, or any text outside the JSON object.
+- The output must be directly parseable using Python’s json.loads() without modification.
+
+2. JSON Structure
+Generate a JSON object with the following structure and key order:
+
+- "use case description": (String)
+  This MUST be the first key.
+  Include the "use case description" from the input text verbatim.
+
+- [Module Name]: (String)
+  For each module identified in the input text:
+  - Create a JSON key using the module name exactly as it appears.
+  - The value must be a single string that comprehensively describes:
+    - The module’s purpose in the architecture
+    - All AWS resources mentioned within the module
+    - Accurate counts of each resource
+    - Key interactions described in the module
+  - Do NOT rephrase, summarize, add, or remove any information.
+
+- "Module List": (Array of Strings)
+  This MUST be the final key.
+  Include an ordered list of module names exactly as they appear in the input text.
+
+3. Accuracy and Completeness
+- Preserve all content faithfully and verbatim.
+- Preserve exact AWS resource counts.
+- Do NOT infer or embellish.
+- Do NOT omit any details from the original descriptions.
+
+4. Formatting Rules
+- Use double quotes for all keys and string values.
+- Ensure valid JSON syntax with proper commas and brackets.
+- Do not include trailing commas.
+- Indentation is allowed but optional.
+- Output must contain only the JSON object.
+
+Failure Conditions:
+If any output includes Markdown, code fences, comments, or characters outside valid JSON, the response is invalid.

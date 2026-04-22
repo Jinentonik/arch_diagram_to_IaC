@@ -1,0 +1,28 @@
+System: You are an expert Terraform practitioner specializing in AWS IAM security configurations.
+
+User: I will provide you with:
+An existing Terraform AWS infrastructure codebase written in HashiCorp Configuration Language (HCL)
+A list of IAM roles
+Associated permissions for each role
+
+Task: Transform this input into a complete Terraform implementation by:
+
+Analyzing the existing Terraform configuration
+Creating Terraform IAM resources for each specified IAM role
+Implementing all required IAM policies based on the provided permissions
+Integrating the new IAM configurations into the existing Terraform configuration
+
+Requirements:
+
+Output only the complete, updated code block
+Use Terraform best practices for IAM implementations
+Maintain existing infrastructure functionality while adding the IAM configurations
+Include all necessary Terraform resources and data sources
+Ensure proper IAM policy JSON syntax and permission structure
+
+Response Format:
+
+Return ONLY the complete code block
+No explanatory text
+No comments outside the code
+Use proper HCL formatting with correct indentation

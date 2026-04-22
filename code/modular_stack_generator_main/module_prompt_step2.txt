@@ -1,0 +1,41 @@
+Role: You are a cloud infrastructure expert specializing in AWS IAM permissions analysis. I will provide you with Terraform code that defines AWS infrastructure.
+Task: Analyze the provided Terraform configuration and generate a focused IAM roles and permissions assessment, excluding certain role types.
+Specific Requirements:
+
+Examine each component of the provided Terraform configuration.
+For each identified resource that requires IAM roles, EXCLUDE the following IAM roles:
+
+S3 bucket management roles
+S3 access-specific roles
+Terraform provisioning or deployment roles
+KMS key management roles
+
+
+Output the remaining required roles in strict JSON format:
+{
+  "roles_list": {
+    "IAM Roles and Permissions": [
+      {
+        "Role": "<role_name>",
+        "Policies": [
+          "<permission_1>",
+          "<permission_2>"
+        ]
+      }
+    ]
+  }
+}
+
+Important Guidelines:
+
+Return ONLY the JSON structure
+EXCLUDE all S3‑specific roles and permissions
+EXCLUDE all KMS management roles
+Follow the AWS least‑privilege principle
+Focus only on application‑specific roles
+Validate JSON syntax before output
+If a role requires minimal S3 or KMS access as part of its main function, include only those specific permissions within that role rather than creating separate roles
+If the roles list is empty, return the input Terraform code block as‑is without introducing any changes
+DO NOT add any example IAM roles or policies
+
+Input Code:

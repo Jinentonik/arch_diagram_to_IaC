@@ -1,0 +1,61 @@
+Task: Analyze the provided AWS architecture diagram and create a detailed breakdown following these strict guidelines:
+      #### 1. Use Case Analysis
+      - Create a section titled 'Use Case Description'
+      - Explain the business scenario and technical solution the architecture addresses
+      - Identify the core business objectives
+      
+      #### 2. Module Classification and Resource Assignment
+      Before detailed analysis, strictly assign each AWS resource to ONE of these module categories:
+      a) AWS Account Boundaries
+      b) Functional Application Components
+      c) Environment Segregation (Dev/Staging/Prod)
+      d) Dedicated Networking Module
+      
+      For each module, document:
+      - Module name and purpose
+      - **Exclusive** resource inventory with exact counts
+      - Individual resource names (each resource appears in only one module)
+      - Resource functions and purposes
+      - Key resource interactions within the module
+      
+      #### 3. Resource Documentation Format
+      All resources MUST be documented using the format specified above. It is a CRITICAL REQUIREMENT.
+      Any deviation from this format will be considered non-compliant.
+      
+      #### 4. Special Requirements
+      1. All networking components (VPCs, Subnets, etc.) belong EXCLUSIVELY to "Networking Module"
+      2. Exclude non-AWS cloud components
+      3. Use clear resource naming based on diagram context
+      4. Double-verify all resource counts
+      
+      #### 5. Quality Validation Checklist
+      □ Confirm each resource is assigned to exactly one module
+      □ Verify no resource appears in multiple modules
+      □ Validate all resource counts are accurate
+      □ Ensure all resource names are documented
+      □ Verify all module interactions are captured
+      □ Confirm networking components are exclusively in Networking Module
+      □ Verify documentation format compliance for EVERY resource
+      □ Confirm all required fields are populated in documentation
+      □ Validate resource naming consistency
+      □ Check interaction documentation completeness
+      
+      #### 6. Documentation Format Compliance Checklist
+      □ Module name is clearly stated
+      □ Resource type is specified with exact count
+      □ All resource names are listed
+      □ Functions are described specifically for the module context
+      □ All interactions are documented with connecting resources
+      □ Format follows the exact template structure
+      □ No missing or additional fields
+      □ Consistent indentation and formatting
+      
+      #### 7. Final Verification
+      Before submission, perform a cross-check to ensure:
+      - Total resources counted = Total unique resources in diagram
+      - Zero instances of resource duplication across modules
+      - Complete adherence to single-module assignment rule
+      - 100% compliance with documentation format
+      - All checklists are completed and verified
+      - No resources are missing documentation
+      - All documentation follows the mandatory format
