@@ -1,3 +1,13 @@
+data "archive_file" "upload_diagram" {
+  type        = "zip"
+  source_dir = "${path.root}/code/upload_diagram"
+  output_path = "${path.root}/code/zip/upload_diagram/upload_diagram.zip"
+}
+data "archive_file" "job_status" {
+  type        = "zip"
+  source_dir = "${path.root}/code/job_status"
+  output_path = "${path.root}/code/zip/job_status/job_status.zip"
+}
 data "archive_file" "generate_architecture_description" {
   type        = "zip"
   source_dir = "${path.root}/code/generate_architecture_description"
@@ -32,6 +42,26 @@ data "archive_file" "zip_iac_file" {
   type        = "zip"
   source_dir = "${path.root}/code/zip_iac_file"
   output_path = "${path.root}/code/zip/zip_iac_file/zip_iac_file.zip"
+}
+
+resource "aws_lambda_function" "upload_diagram" {
+	function_name = "tf-upload_diagram"
+	filename      = "${path.root}/code/zip/upload_diagram/upload_diagram.zip"
+	handler       = "lambda_function.lambda_handler"
+	runtime       = "python3.14"
+	role          = aws_iam_role.iamr_lambda.arn
+	timeout       = 60
+	source_code_hash = data.archive_file.upload_diagram.output_base64sha256
+}
+
+resource "aws_lambda_function" "job_status" {
+	function_name = "tf-job_status"
+	filename      = "${path.root}/code/zip/job_status/job_status.zip"
+	handler       = "lambda_function.lambda_handler"
+	runtime       = "python3.14"
+	role          = aws_iam_role.iamr_lambda.arn
+	timeout       = 60
+	source_code_hash = data.archive_file.job_status.output_base64sha256
 }
 
 resource "aws_lambda_function" "generate_architecture_description" {

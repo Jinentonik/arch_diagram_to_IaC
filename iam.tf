@@ -51,3 +51,22 @@ resource "aws_iam_role_policy_attachment" "iamr_step_function_cwlogs" {
 	role       = aws_iam_role.iamr_step_function.name
 	policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
 }
+
+resource "aws_iam_role_policy" "lambda_ddb_access" {
+  role = aws_iam_role.iamr_lambda.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:UpdateItem"
+        ]
+        Resource = aws_dynamodb_table.jobs.arn
+      }
+    ]
+  })
+  depends_on = [ aws_dynamodb_table.jobs]
+}
