@@ -28,6 +28,11 @@ data "archive_file" "modular_stack_generator_main" {
   source_dir = "${path.root}/code/modular_stack_generator_main"
   output_path = "${path.root}/code/zip/modular_stack_generator_main/modular_stack_generator_main.zip"
 }
+data "archive_file" "zip_iac_file" {
+  type        = "zip"
+  source_dir = "${path.root}/code/zip_iac_file"
+  output_path = "${path.root}/code/zip/zip_iac_file/zip_iac_file.zip"
+}
 
 resource "aws_lambda_function" "generate_architecture_description" {
 	function_name = "tf-generate_architecture_description"
@@ -85,6 +90,16 @@ resource "aws_lambda_function" "modular_stack_generator_main" {
 	handler       = "lambda_function.lambda_handler"
 	runtime       = "python3.14"
 	role          = aws_iam_role.iamr_lambda.arn
-	timeout       = 60
+	timeout       = 300
 	source_code_hash = data.archive_file.modular_stack_generator_main.output_base64sha256
+}
+
+resource "aws_lambda_function" "zip_iac_file" {
+	function_name = "tf-zip_iac_file"
+	filename      = "${path.root}/code/zip/zip_iac_file/zip_iac_file.zip"
+	handler       = "lambda_function.lambda_handler"
+	runtime       = "python3.14"
+	role          = aws_iam_role.iamr_lambda.arn
+	timeout       = 60
+	source_code_hash = data.archive_file.zip_iac_file.output_base64sha256
 }

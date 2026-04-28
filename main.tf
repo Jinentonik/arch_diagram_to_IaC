@@ -1,6 +1,6 @@
 variable "region" {
   type    = string
-  default = "ap-southeast-1" # Replace with the default region you want to use
+  default = "us-east-1" # Replace with the default region you want to use
 }
 
 terraform {
