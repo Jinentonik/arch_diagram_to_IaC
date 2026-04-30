@@ -1,5 +1,6 @@
 import json
 import boto3
+import os
 
 def generate_module_descriptions(architecture_description_dict , modules_description_prompt):
     bedrock_runtime = boto3.client('bedrock-runtime')
@@ -56,14 +57,45 @@ def read_file(file_path):
     except FileNotFoundError:
         print(f"Error: {file_path} not found. Check your deployment package.")
 
+def update_job(job_id, status, progress, download_url=None, error_message=None):
+    lambda_client = boto3.client("lambda")
+    update_job_lambda_arn = os.getenv('UPDATE_JOB_LAMBDA_ARN')
+    payload = {
+        "jobId": job_id,
+        "status": status,
+        "progress": progress
+    }
+
+    if download_url:
+        payload["downloadUrl"] = download_url
+
+    if error_message:
+        payload["errorMessage"] = error_message
+
+    lambda_client.invoke(
+        FunctionName=update_job_lambda_arn,
+        InvocationType="Event",
+        Payload=json.dumps(payload).encode("utf-8")
+    )
+
 def lambda_handler(event, context):
     # TODO implement
     file_path = "./module_description_prompt.txt"
     modules_description_prompt = read_file(file_path)
+
+    print(event)
+    job_id = event.get("jobId")
     arch_description_dict = event.get('arch_description_dict')
+
     module_descriptions = generate_module_descriptions(arch_description_dict , modules_description_prompt)
 
+    update_job(
+        job_id=job_id,
+        status="IDENTIFYING_MODULES",
+        progress=40
+    )
     return {
         'statusCode': 200,
-        'module_descriptions': module_descriptions
+        'module_descriptions': module_descriptions,
+        'jobId': job_id
     }

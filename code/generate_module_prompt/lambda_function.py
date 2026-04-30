@@ -1,4 +1,6 @@
 import json
+import boto3
+import os
 
 def generate_module_prompts(deployment_sequence_dict):
     
@@ -43,14 +45,44 @@ def generate_module_prompts(deployment_sequence_dict):
         module_prompt_dict[module_name] = prompt
     return module_prompt_dict,stack_names
 
+def update_job(job_id, status, progress, download_url=None, error_message=None):
+    lambda_client = boto3.client("lambda")
+    update_job_lambda_arn = os.getenv('UPDATE_JOB_LAMBDA_ARN')
+    payload = {
+        "jobId": job_id,
+        "status": status,
+        "progress": progress
+    }
+
+    if download_url:
+        payload["downloadUrl"] = download_url
+
+    if error_message:
+        payload["errorMessage"] = error_message
+
+    lambda_client.invoke(
+        FunctionName=update_job_lambda_arn,
+        InvocationType="Event",
+        Payload=json.dumps(payload).encode("utf-8")
+    )
+
 def lambda_handler(event, context):
     # TODO implement
+    print(event)
+    job_id = event.get('jobId')
     module_descriptions = event.get('module_descriptions', '')
+
     module_prompt_dict,modules_list = generate_module_prompts(module_descriptions)
-    print(modules_list)
-    print(json.dumps(module_prompt_dict))
+    
+    update_job(
+        job_id=job_id,
+        status="PREPARING_IAC",
+        progress=65
+    )
+
     return {
         'statusCode': 200,
         'module_prompt_dict': module_prompt_dict,
-        'modules_list': modules_list
+        'modules_list': modules_list,
+        'jobId': job_id
     }

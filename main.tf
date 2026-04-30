@@ -5,11 +5,11 @@ variable "region" {
 
 terraform {
   backend "s3" {
-    bucket         = "jktan-s3-state-file"
-    key            = "global/diagram-to-code/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    profile        = "diagram-to-code"
+    bucket  = "jktan-s3-state-file"
+    key     = "global/diagram-to-code/terraform.tfstate"
+    region  = "us-east-1"
+    encrypt = true
+    profile = "diagram-to-code"
   }
   required_providers {
     aws = {
@@ -25,4 +25,12 @@ terraform {
 provider "aws" {
   profile = "diagram-to-code"
   region  = var.region
+  default_tags {
+    tags = {
+      Environment = "Dev"
+      Project     = "Diagram-To-Code"
+      Managed_by  = "Terraform"
+    }
+  }
+
 }

@@ -123,36 +123,50 @@
       "Next": "modular_stack_generator_main"
     },
     "modular_stack_generator_main": {
+      // "Type": "Task",
+      // "Resource": "arn:aws:states:::lambda:invoke",
+      // "Output": "{% $states.result.Payload %}",
+      // "Arguments": {
+      //   "FunctionName": "${MODULAR_STACK_GENERATOR_MAIN_LAMBDA_ARN}",
+      //   "Payload": "{% $states.input %}"
+      // },
+      // "Retry": [
+      //   {
+      //     "ErrorEquals": [
+      //       "Lambda.ServiceException",
+      //       "Lambda.AWSLambdaException",
+      //       "Lambda.SdkClientException",
+      //       "Lambda.TooManyRequestsException"
+      //     ],
+      //     "IntervalSeconds": 1,
+      //     "MaxAttempts": 3,
+      //     "BackoffRate": 2,
+      //     "JitterStrategy": "FULL"
+      //   }
+      // ],
       "Type": "Map",
-      "Items": "{% $.modules %}",
+      "ItemsPath": "$.modules",
       "MaxConcurrency": 3,
-      "ItemSelector": {
-        "jobId": "$.jobId",
-        "module_name": "$$.Map.Item.Value.module_name",
-        "module_prompt": "$$.Map.Item.Value.module_prompt"
+      "Parameters": {
+        "jobId.$": "$.jobId",
+        "module_name.$": "$$.Map.Item.Value.module_name",
+        "module_prompt.$": "$$.Map.Item.Value.module_prompt"
       },
-      "ItemProcessor": {
+      "Iterator": {
         "StartAt": "generate_single_module",
         "States": {
           "generate_single_module": {
             "Type": "Task",
             "Resource": "arn:aws:states:::lambda:invoke",
-            "Output": "{% $states.result.Payload %}",
             "Arguments": {
               "FunctionName": "${MODULAR_STACK_GENERATOR_MAIN_LAMBDA_ARN}",
-              "Payload": "{% $states.input %}"
+              "Payload.$": "$"
             },
             "Retry": [
               {
-                "ErrorEquals": [
-                  "Lambda.ServiceException",
-                  "Lambda.AWSLambdaException",
-                  "Lambda.SdkClientException",
-                  "Lambda.TooManyRequestsException"
-                ],
+                "ErrorEquals": ["States.ALL"],
                 "MaxAttempts": 3,
-                "BackoffRate": 2,
-                "IntervalSeconds": 2
+                "BackoffRate": 2
               }
             ],
             "End": true

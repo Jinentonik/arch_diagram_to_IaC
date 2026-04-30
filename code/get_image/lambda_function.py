@@ -1,10 +1,9 @@
-import json
 import boto3
-from urllib.parse import urlparse
 import base64
 import os 
+import json
 
-def download_file_from_s3(s3_uri, local_dir):
+def download_file_from_s3(bucket_name, key_name, local_dir):
     
     """
     Download a file from an S3 bucket to a local directory.
@@ -17,11 +16,10 @@ def download_file_from_s3(s3_uri, local_dir):
     
     try:
         # Parse the S3 URI
-        parsed_url = urlparse(s3_uri)
-        bucket_name = parsed_url.netloc
-        key_name = parsed_url.path.lstrip('/')
-        print('bucket name', bucket_name)
-        print('key name', key_name)
+        
+        print("Bucket:", bucket_name)
+        print("Key:", key_name)
+
         # Create a boto3 client
         s3_client = boto3.client('s3')
 
@@ -34,7 +32,7 @@ def download_file_from_s3(s3_uri, local_dir):
 
         # Download the file from S3
         s3_client.download_file(bucket_name, key_name, local_file_path)
-        print("File downloaded")
+        print("File downloaded to", local_file_path)
 
         return local_file_path
 
@@ -51,16 +49,72 @@ def get_image_data(image_file):
         
     return image_data
 
+
+def update_job(job_id, status, progress, download_url=None, error_message=None):
+    lambda_client = boto3.client("lambda")
+    update_job_lambda_arn = os.getenv('UPDATE_JOB_LAMBDA_ARN')
+    payload = {
+        "jobId": job_id,
+        "status": status,
+        "progress": progress
+    }
+
+    if download_url:
+        payload["downloadUrl"] = download_url
+
+    if error_message:
+        payload["errorMessage"] = error_message
+
+    lambda_client.invoke(
+        FunctionName=update_job_lambda_arn,
+        InvocationType="Event",
+        Payload=json.dumps(payload).encode("utf-8")
+    )
+
 def lambda_handler(event, context):
     # TODO implement
-    image_s3_uri = event['file_path']
-    #code_language = event['code_language']
-    #connection_id = event.get('connection_id')  # Optional connection ID for targeted WebSocket messages
-    image_path = download_file_from_s3(image_s3_uri, "/tmp")
-    print('image path', image_path)
-    encoded_image= get_image_data(image_path)
-    
-    return {
-        'statusCode': 200,
-        'encoded_image': encoded_image
-    }
+
+    try:
+        print(event)
+        # ✅ Extract bucket and key from EventBridge event
+        bucket_name = event.get('bucket')
+        key_name = event.get('objectKey')
+
+        
+        # ✅ Derive jobId from key path: uploads/{jobId}/filename
+        job_id = key_name.split("/")[1]
+        print("Job ID:", job_id)
+        
+        # ✅ Download image
+        image_path = download_file_from_s3(
+            bucket_name=bucket_name,
+            key_name=key_name,
+            local_dir="/tmp"
+        )
+
+        
+        # ✅ Convert image to base64
+        encoded_image = get_image_data(image_path)
+        # update job status
+        
+        update_job(
+            job_id=job_id,
+            status="RETRIEVE_UPLOADED_IMAGE",
+            progress=20
+        )
+
+        # ✅ Return structured output for Step Function
+        return {
+            "statusCode": 200,
+            "jobId": job_id,
+            "bucket": bucket_name,
+            "key": key_name,
+            "encoded_image": encoded_image
+        }
+
+    except Exception as e:
+        print("Lambda failure:", str(e))
+        return {
+            "statusCode": 500,
+            "error": str(e)
+        }

@@ -1,10 +1,13 @@
 import json
 import boto3
+import os
 
 dynamodb = boto3.resource("dynamodb")
-TABLE = dynamodb.Table("diagram-to-terraform-jobs")
+ddb_table_name = os.getenv('DDB_TABLE_NAME')
+TABLE = dynamodb.Table(ddb_table_name)
 
-def handler(event, context):
+def lambda_handler(event, context):
+    print(event)
     job_id = event["queryStringParameters"]["jobId"]
 
     resp = TABLE.get_item(Key={"jobId": job_id})
@@ -20,6 +23,9 @@ def handler(event, context):
 
     return {
         "statusCode": 200,
-        "headers": { "Content-Type": "application/json" },
-        "body": json.dumps(body)
+        "headers": { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+        },
+        "body": json.dumps(body, default=str)
     }

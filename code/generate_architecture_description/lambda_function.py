@@ -1,5 +1,6 @@
 import json
 import boto3
+import os
 
 def generate_architecture_description(prompt, encoded_image):
     
@@ -92,16 +93,47 @@ def read_file(file_path):
     except FileNotFoundError:
         print(f"Error: {file_path} not found. Check your deployment package.")
 
+def update_job(job_id, status, progress, download_url=None, error_message=None):
+    lambda_client = boto3.client("lambda")
+    update_job_lambda_arn = os.getenv('UPDATE_JOB_LAMBDA_ARN')
+    payload = {
+        "jobId": job_id,
+        "status": status,
+        "progress": progress
+    }
+
+    if download_url:
+        payload["downloadUrl"] = download_url
+
+    if error_message:
+        payload["errorMessage"] = error_message
+
+    lambda_client.invoke(
+        FunctionName=update_job_lambda_arn,
+        InvocationType="Event",
+        Payload=json.dumps(payload).encode("utf-8")
+    )
+
 def lambda_handler(event, context):
     # TODO implement
-    print(event)
+    
     file_path = "./arch_prompt.txt"
     arch_prompt = read_file(file_path)
+
+    print(event)
     encoded_image = event.get('encoded_image', '')
+    job_id = event.get("jobId")
+    
     arch_description_dict=generate_architecture_description(arch_prompt, encoded_image)
     print(arch_description_dict)
 
+    update_job(
+        job_id=job_id,
+        status="ANALYZING_ARCHITECTURE",
+        progress=30
+    )
     return {
         'statusCode': 200,
-        'arch_description_dict': arch_description_dict
+        'arch_description_dict': arch_description_dict,
+        'jobId': job_id
     }

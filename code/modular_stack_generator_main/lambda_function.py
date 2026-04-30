@@ -4,6 +4,9 @@ from datetime import datetime
 import re
 from pprint import pprint
 import uuid
+import os
+
+s3_code_bucket = os.getenv('S3_CODE_BUCKET')
 
 def read_file(file_path):
     try:
@@ -19,7 +22,7 @@ def write_code_to_s3(
     bucket_name,
     stack_dirname,
     module_name,
-    log_stream,
+    job_id,
     s3_prefix=""
 ):
    
@@ -36,7 +39,7 @@ def write_code_to_s3(
     # Build S3 key
     now = datetime.now()
     now_str = now.strftime('%Y_%m_%d_%H_%M')
-    key_parts = [s3_prefix.strip('/'), stack_dirname, now_str, log_stream, filename]
+    key_parts = [s3_prefix.strip('/'), stack_dirname, now_str, job_id, filename]
     # s3_key = f"{s3_prefix.strip('/')}/{stack_dirname}/{now_str}/{filename}"
     s3_key = "/".join(part for part in key_parts if part)
 
@@ -164,7 +167,7 @@ def get_ai_response(prompt: str):
     else:
         return "Unexpected response format"
 
-def code_generation_do_it_all(module_name, module_prompt, log_stream):
+def code_generation_do_it_all(module_name, module_prompt, job_id):
     """
     """
     print("STARTING STACK GENERATION FOR MODULE NAME:" , module_name)
@@ -215,32 +218,60 @@ def code_generation_do_it_all(module_name, module_prompt, log_stream):
     pprint(step_4_response)
     
     # Step 5: Write final code to s3
-    codefilepath = write_code_to_s3(step_4_response, "test-a2a-bucket","generated_code", module_name, log_stream)
+    codefilepath = write_code_to_s3(step_4_response, s3_code_bucket,"generated_code", module_name, job_id)
     
     print(f"Task {module_name} ended at {datetime.now()}")
 
     return  codefilepath
 
-def modular_stack_generator_main(module_prompt_dict, log_stream):
+def modular_stack_generator_main(module_prompt_dict, job_id):
     responses = []
 
     for module_name, module_prompt in module_prompt_dict.items():
-        result = code_generation_do_it_all(module_name, module_prompt, log_stream)
+        result = code_generation_do_it_all(module_name, module_prompt, job_id)
         responses.append(result)
 
     return responses
 
+def update_job(job_id, status, progress, download_url=None, error_message=None):
+    lambda_client = boto3.client("lambda")
+    update_job_lambda_arn = os.getenv('UPDATE_JOB_LAMBDA_ARN')
+    payload = {
+        "jobId": job_id,
+        "status": status,
+        "progress": progress
+    }
+
+    if download_url:
+        payload["downloadUrl"] = download_url
+
+    if error_message:
+        payload["errorMessage"] = error_message
+
+    lambda_client.invoke(
+        FunctionName=update_job_lambda_arn,
+        InvocationType="Event",
+        Payload=json.dumps(payload).encode("utf-8")
+    )
+
 def lambda_handler(event, context):
     # TODO implement
+    print(event)
+    job_id = event.get('jobId')
     module_prompt_dict = event.get('module_prompt_dict')
     module_list = event.get('module_list')
-    log_stream = context.log_stream_name
-    result = modular_stack_generator_main(module_prompt_dict, log_stream)
+    result = modular_stack_generator_main(module_prompt_dict, job_id)
     # module_list = event.get('module_list', '')  
     
+    update_job(
+        job_id=job_id,
+        status="GENERATING_TERRAFORM",
+        progress=85
+    )
     
     return {
         'statusCode': 200,
         'body': "Success",
-        'source_s3_uris': result
+        'source_s3_uris': result,
+        'jobId': job_id
     }
