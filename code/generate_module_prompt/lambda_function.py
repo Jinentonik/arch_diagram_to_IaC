@@ -2,7 +2,7 @@ import json
 import boto3
 import os
 
-def generate_module_prompts(deployment_sequence_dict):
+def generate_module_prompts(deployment_sequence_dict, job_id):
     
     # Parse dictionary
     
@@ -11,13 +11,14 @@ def generate_module_prompts(deployment_sequence_dict):
     modules_description_dict=json.loads(modules_description)
     
     # Create empty dictionary to store prompts
-    module_prompt_dict = {}   
+    # module_prompt_dict = {}   
+    module_prompt_list= []   
     
     keys = list(modules_description_dict.keys())
     print(keys)
     
-    stack_names = list(modules_description_dict.values())[-1] 
-    print("stack_names" , stack_names)
+    # stack_names = list(modules_description_dict.values())[-1] 
+    # print("stack_names" , stack_names)
     
     # Skip first and last keys, process only module information
     for key in keys[1:-1]:
@@ -42,8 +43,15 @@ def generate_module_prompts(deployment_sequence_dict):
         )
         
         # Add to prompt dictionary with module name as key
-        module_prompt_dict[module_name] = prompt
-    return module_prompt_dict,stack_names
+        # module_prompt_dict[module_name] = prompt
+        module_prompt_list.append(
+            {
+                "moduleName": module_name,
+                "prompt": prompt,
+                "jobId": job_id
+            }
+        )
+    return module_prompt_list
 
 def update_job(job_id, status, progress, download_url=None, error_message=None):
     lambda_client = boto3.client("lambda")
@@ -72,7 +80,7 @@ def lambda_handler(event, context):
     job_id = event.get('jobId')
     module_descriptions = event.get('module_descriptions', '')
 
-    module_prompt_dict,modules_list = generate_module_prompts(module_descriptions)
+    module_prompt_list = generate_module_prompts(module_descriptions, job_id)
     
     update_job(
         job_id=job_id,
@@ -80,9 +88,4 @@ def lambda_handler(event, context):
         progress=65
     )
 
-    return {
-        'statusCode': 200,
-        'module_prompt_dict': module_prompt_dict,
-        'modules_list': modules_list,
-        'jobId': job_id
-    }
+    return module_prompt_list

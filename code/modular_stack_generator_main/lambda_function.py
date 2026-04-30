@@ -168,10 +168,10 @@ def get_ai_response(prompt: str):
         return "Unexpected response format"
 
 def code_generation_do_it_all(module_name, module_prompt, job_id):
-    """
-    """
+    
     print("STARTING STACK GENERATION FOR MODULE NAME:" , module_name)
     print(f"Task {module_name} started at {datetime.now()}")
+    log_bucket = "test-a2a-bucket"
     module_prompt_suffix_file_path = "./module_prompt_suffix.txt"
     deployment_sequence_prompt = read_file(module_prompt_suffix_file_path)
     step_1_prompt= module_prompt + '\n' + deployment_sequence_prompt
@@ -183,7 +183,7 @@ def code_generation_do_it_all(module_name, module_prompt, job_id):
     
     step_1_response= get_ai_response(step_1_prompt)
     
-    write_log_to_s3(step_1_response, "step1", "test-a2a-bucket", "generated_code_log")
+    write_log_to_s3(step_1_response, "step1", log_bucket, "generated_code_log")
     print("-----------------STEP 1 RESPONSE---------------")
     pprint( step_1_response)
     
@@ -195,7 +195,7 @@ def code_generation_do_it_all(module_name, module_prompt, job_id):
     print("-----------------STEP 2 RESPONSE---------------")
     step_2_response= get_ai_response(step_2_prompt)
     
-    write_log_to_s3(step_2_response, "step2", "test-a2a-bucket", "generated_code_log")
+    write_log_to_s3(step_2_response, "step2", log_bucket, "generated_code_log")
     pprint(step_2_response)
     
     # Step 3: Perplexity Step 3
@@ -206,7 +206,7 @@ def code_generation_do_it_all(module_name, module_prompt, job_id):
     print("-----------------STEP 3 RESPONSE---------------")
     step_3_response= get_ai_response(step_3_prompt)
     
-    write_log_to_s3(step_3_response, "step3", "test-a2a-bucket", "generated_code_log")
+    write_log_to_s3(step_3_response, "step3", log_bucket, "generated_code_log")
     pprint( step_3_response)
     
     # Step 4: Perplexity Step 4
@@ -214,7 +214,7 @@ def code_generation_do_it_all(module_name, module_prompt, job_id):
     print("step 4 prompt" , step_4_prompt)
     
     step_4_response= get_ai_response(step_4_prompt)
-    write_log_to_s3(step_4_response, "step4", "test-a2a-bucket", "generated_code_log")
+    write_log_to_s3(step_4_response, "step4", log_bucket, "generated_code_log")
     pprint(step_4_response)
     
     # Step 5: Write final code to s3
@@ -258,11 +258,14 @@ def lambda_handler(event, context):
     # TODO implement
     print(event)
     job_id = event.get('jobId')
-    module_prompt_dict = event.get('module_prompt_dict')
-    module_list = event.get('module_list')
-    result = modular_stack_generator_main(module_prompt_dict, job_id)
+    module_name = event.get('moduleName')
+    module_prompt = event.get('prompt')
+    # module_prompt_dict = event.get('module_prompt_dict')
+    # module_list = event.get('module_list')
+    # result = modular_stack_generator_main(module_prompt_dict, job_id)
     # module_list = event.get('module_list', '')  
-    
+    result = code_generation_do_it_all(module_name, module_prompt, job_id)
+
     update_job(
         job_id=job_id,
         status="GENERATING_TERRAFORM",

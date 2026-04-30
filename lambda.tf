@@ -175,7 +175,7 @@ resource "aws_lambda_function" "modular_stack_generator_main" {
   environment {
     variables = {
       UPDATE_JOB_LAMBDA_ARN = aws_lambda_function.update_job_status.arn
-      S3_CODE_BUCKET = aws_s3_bucket.output.arn
+      S3_CODE_BUCKET = aws_s3_bucket.output.id
     }
   }
 }
@@ -191,7 +191,7 @@ resource "aws_lambda_function" "zip_iac_file" {
   environment {
     variables = {
       UPDATE_JOB_LAMBDA_ARN = aws_lambda_function.update_job_status.arn
-      S3_CODE_BUCKET = aws_s3_bucket.output.arn
+      S3_CODE_BUCKET = aws_s3_bucket.output.id
     }
   }
 }

@@ -120,21 +120,17 @@
           "JitterStrategy": "FULL"
         }
       ],
-      "Next": "modular_stack_generator_main"
+      "Next": "Map"
     },
-    "modular_stack_generator_main": {
+    "Map": {
       "Type": "Map",
-      "Items": "{% $.modules %}",
-      "MaxConcurrency": 3,
-      "ItemSelector": {
-        "jobId": "$.jobId",
-        "module_name": "$$.Map.Item.Value.module_name",
-        "module_prompt": "$$.Map.Item.Value.module_prompt"
-      },
       "ItemProcessor": {
-        "StartAt": "generate_single_module",
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "modular_stack_generator_main",
         "States": {
-          "generate_single_module": {
+          "modular_stack_generator_main": {
             "Type": "Task",
             "Resource": "arn:aws:states:::lambda:invoke",
             "Output": "{% $states.result.Payload %}",
@@ -150,9 +146,10 @@
                   "Lambda.SdkClientException",
                   "Lambda.TooManyRequestsException"
                 ],
+                "IntervalSeconds": 1,
                 "MaxAttempts": 3,
                 "BackoffRate": 2,
-                "IntervalSeconds": 2
+                "JitterStrategy": "FULL"
               }
             ],
             "End": true
